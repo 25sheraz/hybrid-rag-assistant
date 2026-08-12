@@ -1,4 +1,4 @@
-# DevelMo AI — Dual-Vector Hybrid RAG & Dynamic Document Management
+# Dual-Vector Hybrid RAG & Dynamic Document Management
 
 <p align="center">
   <strong>Production-grade Enterprise Retrieval-Augmented Generation (RAG) System with Dual-Vector Search, Cross-Encoder Reranking, Dynamic Document Management, Redis Session Memory, and Embedded React UI.</strong>
@@ -8,9 +8,9 @@
 
 ## 🚀 Overview
 
-**DevelMo** is an end-to-end, enterprise-ready AI Chat & Knowledge Retrieval System. It combines dense semantic embeddings with sparse BM25 keyword matching via **Reciprocal Rank Fusion (RRF)**, re-ranks candidate matches with high-precision Cross-Encoders, leverages **Redis Cloud** for multi-turn conversation memory with dynamic query reformulation, and provides a full-featured **Dynamic Document Management System**.
+This system is an end-to-end, enterprise-ready AI Chat & Knowledge Retrieval System. It combines dense semantic embeddings with sparse BM25 keyword matching via **Reciprocal Rank Fusion (RRF)**, re-ranks candidate matches with high-precision Cross-Encoders, leverages **Redis Cloud** for multi-turn conversation memory with dynamic query reformulation, and provides a full-featured **Dynamic Document Management System**.
 
-Whether deployed as a FastAPI backend, embedded into web applications via the included React components, or executed interactively in the terminal, DevelMo delivers fast, contextually aware responses grounded strictly in your uploaded knowledge base.
+Whether deployed as a FastAPI backend, embedded into web applications via the included React components, or executed interactively in the terminal, it delivers fast, contextually aware responses grounded strictly in your uploaded knowledge base.
 
 ---
 
@@ -220,7 +220,7 @@ python test_full_pipeline.py
 #### Request Body
 ```json
 {
-  "query": "What custom AI solutions does DevelMo offer?",
+  "query": "What key features are supported in this document store?",
   "session_id": "web_user_123"
 }
 ```
@@ -228,12 +228,12 @@ python test_full_pipeline.py
 #### Response Body
 ```json
 {
-  "query": "What custom AI solutions does DevelMo offer?",
-  "rewritten_query": "What custom artificial intelligence and machine learning solutions are offered by DevelMo?",
-  "response": "DevelMo provides custom AI solutions including enterprise RAG systems, predictive analytics...",
+  "query": "What key features are supported in this document store?",
+  "rewritten_query": "What key features and capabilities are supported in this document store?",
+  "response": "The system provides custom AI capabilities including enterprise RAG systems, dynamic document management...",
   "sources": [
     {
-      "source": "DevelMo_Knowledge_Base.pdf",
+      "source": "Sample_Knowledge_Base.pdf",
       "page": 1
     }
   ]
@@ -245,7 +245,7 @@ python test_full_pipeline.py
 ## 📁 Repository Structure
 
 ```
-DevelMo/
+PDF-Uploader/
 ├── server.py                  # FastAPI REST API & static file server
 ├── cli.py                     # Terminal interactive assistant
 ├── ingest.py                  # Document batch ingestion CLI tool
@@ -279,5 +279,5 @@ DevelMo/
 
 ## 📄 License
 
-This project is proprietary and maintained by **DevelMo**. All rights reserved.
+This project is open-source and available under standard open-source terms. All rights reserved.
 
