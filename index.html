@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG PDF Assistant</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#060B18',
+              900: '#0A1226',
+              850: '#0F1B38',
+              800: '#15254A',
+              700: '#1D3261',
+              600: '#27427C'
+            },
+            crimson: {
+              600: '#E11D48',
+              700: '#BE123C',
+              800: '#9F1239'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            heading: ['Plus Jakarta Sans', 'sans-serif']
+          },
+          boxShadow: {
+            'glow-red': '0 0 25px -5px rgba(225, 29, 72, 0.45)',
+            'card-3d': '0 20px 40px -15px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.12)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1D3261;
+      border-radius: 9999px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #E11D48;
+    }
+
+    /* 3D Crimson Red Buttons */
+    .btn-crimson-3d {
+      background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+      color: #ffffff;
+      font-weight: 700;
+      border-bottom: 3px solid #881337;
+      box-shadow: 0 6px 20px -3px rgba(225, 29, 72, 0.45);
+      transition: all 0.15s ease-out;
+    }
+
+    .btn-crimson-3d:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -3px rgba(225, 29, 72, 0.6);
+      filter: brightness(1.1);
+    }
+
+    .btn-crimson-3d:active {
+      transform: translateY(2px);
+      border-bottom-width: 1px;
+    }
+
+    .btn-navy-3d {
+      background: linear-gradient(180deg, #15254A 0%, #0A1226 100%);
+      color: #ffffff;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-bottom: 3px solid #060B18;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      transition: all 0.15s ease;
+    }
+
+    .btn-navy-3d:hover {
+      transform: translateY(-1px);
+      background: linear-gradient(180deg, #1D3261 0%, #0F1B38 100%);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-navy-3d:active {
+      transform: translateY(1px);
+      border-bottom-width: 1px;
+    }
+
+    /* Message Slide-up Animation */
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .animate-slide-up {
+      animation: slideUp 0.2s ease-out forwards;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(0.95) translateY(15px);
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .animate-modal-in {
+      animation: modalIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  </style>
+</head>
+
+<body class="bg-navy-950 text-white font-sans min-h-screen flex flex-col selection:bg-crimson-600 selection:text-white">
+
+  <!-- ================================================================= -->
+  <!-- TOP NAVIGATION HEADER (NAVY & CRIMSON RED)                         -->
+  <!-- ================================================================= -->
+  <header class="bg-navy-900/95 border-b border-white/10 backdrop-blur-md sticky top-0 z-30 shrink-0 shadow-lg">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+
+      <!-- Brand Logo & Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-crimson-600 to-rose-500 p-[2px] shadow-glow-red">
+          <div class="w-full h-full bg-navy-950 rounded-[14px] flex items-center justify-center">
+            <i data-lucide="bot" class="w-5 h-5 text-crimson-600"></i>
+          </div>
+        </div>
+        <div>
+          <h1 class="font-heading font-extrabold text-xl tracking-tight text-white flex items-center gap-2">
+            RAG AI <span class="text-crimson-600">Assistant</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Header Action Items -->
+      <div class="flex items-center gap-3">
+        <!-- Made by Sheraz Badge -->
+        <div
+          class="hidden sm:inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-crimson-800/30 border border-crimson-600/40">
+          <span class="w-2 h-2 rounded-full bg-crimson-600 animate-pulse"></span>
+          <span class="text-xs font-bold text-white tracking-wide">Made by Sheraz</span>
+        </div>
+
+        <!-- Upload PDF Button -->
+        <button onclick="openUploadModal()" class="btn-crimson-3d px-4 py-2 rounded-xl text-sm flex items-center gap-2">
+          <i data-lucide="upload-cloud" class="w-4 h-4"></i>
+          <span>Upload PDF</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ================================================================= -->
+  <!-- MAIN CHAT INTERFACE                                               -->
+  <!-- ================================================================= -->
+  <main class="max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 flex-1 flex flex-col">
+
+    <div
+      class="bg-navy-900 border border-white/10 rounded-3xl shadow-card-3d flex flex-col flex-1 h-[calc(100vh-140px)] min-h-[560px] overflow-hidden">
+
+      <!-- Chat Header Bar -->
+      <div
+        class="px-6 py-4 border-b border-white/10 bg-navy-950/80 flex items-center justify-between shrink-0 shadow-sm">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-9 h-9 rounded-xl bg-crimson-800/30 border border-crimson-600/30 flex items-center justify-center text-crimson-600">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h2 class="font-heading font-bold text-sm text-white tracking-wide">
+              RAG Knowledge Base Chat
+            </h2>
+            <span class="text-[11px] text-emerald-400 font-medium flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Active & Connected
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Manage Documents Button -->
+          <button onclick="openUploadModal()"
+            class="btn-navy-3d px-3.5 py-1.5 rounded-xl text-xs flex items-center gap-1.5">
+            <i data-lucide="folder-kanban" class="w-3.5 h-3.5"></i>
+            <span>Manage Documents</span>
+          </button>
+
+          <!-- Reset Chat Button -->
+          <button onclick="clearChatMessages()"
+            class="px-3 py-1.5 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 text-xs font-semibold border border-white/15 transition-all flex items-center gap-1.5 shadow-sm active:translate-y-0.5">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+            <span>Reset</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Chat Messages Container -->
+      <div id="chat-messages" class="flex-1 overflow-y-auto p-6 flex flex-col gap-5">
+
+        <!-- Welcome Message -->
+        <div class="flex gap-3 animate-slide-up">
+          <div
+            class="w-9 h-9 rounded-2xl bg-navy-800 border border-white/15 flex items-center justify-center text-crimson-600 shrink-0 shadow-md">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div class="flex flex-col gap-1.5 max-w-[85%]">
+            <span class="text-[11px] text-slate-300 font-semibold ml-1">AI Assistant</span>
+            <div
+              class="p-4 rounded-2xl rounded-tl-none bg-navy-850 border border-white/10 text-slate-100 text-sm leading-relaxed shadow-sm">
+              Welcome! Click the <strong>Upload PDF</strong> button above to add documents to your knowledge base, then
+              ask any question.
+            </div>
+
+            <!-- Quick Chips -->
+            <div class="flex flex-wrap gap-2 mt-1.5">
+              <button onclick="sendQuickPrompt('Summarize the uploaded PDF document.')"
+                class="px-3.5 py-1.5 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 text-xs font-medium border border-white/15 transition-all shadow-sm">
+                📄 Summarize document
+              </button>
+              <button onclick="sendQuickPrompt('What are the main key points in the PDF?')"
+                class="px-3.5 py-1.5 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 text-xs font-medium border border-white/15 transition-all shadow-sm">
+                💡 Key points
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Chat Input Area -->
+      <div class="p-4 border-t border-white/10 bg-navy-950/90 shrink-0">
+        <form id="chat-form" onsubmit="handleChatSubmit(event)" class="flex gap-3 items-center max-w-5xl mx-auto">
+          <input type="text" id="chat-input" placeholder="Type your question about the uploaded document..."
+            autocomplete="off"
+            class="flex-1 bg-navy-900 border border-white/15 rounded-2xl px-5 py-3.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-crimson-600 focus:ring-1 focus:ring-crimson-600/30 transition-all shadow-inner">
+
+          <button type="submit" id="send-btn"
+            class="btn-crimson-3d h-12 px-6 rounded-2xl text-sm flex items-center justify-center gap-2 shrink-0">
+            <span>Send</span>
+            <i data-lucide="send" class="w-4 h-4"></i>
+          </button>
+        </form>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- ================================================================= -->
+  <!-- FOOTER                                                            -->
+  <!-- ================================================================= -->
+  <footer class="border-t border-white/10 bg-navy-950 py-3.5 text-center text-xs text-slate-400 shrink-0">
+    <p>Made by <span class="text-white font-bold">Sheraz</span> &bull; Powered by RAG & Qdrant</p>
+  </footer>
+
+  <!-- ================================================================= -->
+  <!-- POPUP MODAL: RAG PDF UPLOADER & KNOWLEDGE BASE                   -->
+  <!-- ================================================================= -->
+  <div id="upload-modal"
+    class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+
+    <!-- Modal Backdrop Overlay Click Handler -->
+    <div class="absolute inset-0" onclick="closeUploadModal()"></div>
+
+    <!-- Modal Box Content -->
+    <div
+      class="relative w-full max-w-lg bg-navy-900 border border-white/15 rounded-3xl p-6 shadow-2xl animate-modal-in flex flex-col gap-6 z-10 max-h-[90vh] overflow-y-auto">
+
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-white/10 pb-4">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 rounded-2xl bg-crimson-800/30 text-crimson-600 border border-crimson-600/30 flex items-center justify-center shadow-inner">
+            <i data-lucide="upload-cloud" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h2 class="font-heading font-extrabold text-lg text-white">Upload RAG PDF</h2>
+            <p class="text-xs text-slate-400">Vectorize PDF, TXT, or MD for AI search</p>
+          </div>
+        </div>
+
+        <button onclick="closeUploadModal()"
+          class="p-2 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-300 hover:text-white border border-white/10 transition-colors">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Drag & Drop PDF Zone -->
+      <div id="drop-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)"
+        ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)"
+        class="border-2 border-dashed border-white/20 hover:border-crimson-600 bg-navy-950/70 hover:bg-navy-950 rounded-2xl p-7 text-center cursor-pointer transition-all duration-200 group shadow-inner">
+
+        <input type="file" id="file-input" accept=".pdf,.txt,.md" class="hidden" onchange="handleFileSelect(event)">
+
+        <div
+          class="w-14 h-14 rounded-2xl bg-navy-800 border border-white/15 group-hover:border-crimson-600 flex items-center justify-center mx-auto mb-3 text-slate-300 group-hover:text-crimson-600 transition-colors shadow-md">
+          <i data-lucide="file-up" class="w-7 h-7"></i>
+        </div>
+
+        <p id="file-label" class="text-sm font-bold text-white">
+          Click or drag & drop PDF file here
+        </p>
+        <p class="text-[11px] text-slate-400 mt-1">Supports PDF, TXT, MD (Max 25MB)</p>
+      </div>
+
+      <!-- Upload Status Banner -->
+      <div id="upload-alert" class="hidden text-xs p-3.5 rounded-xl font-medium"></div>
+
+      <!-- Process & Vectorize Button -->
+      <button id="upload-btn" onclick="uploadSelectedFile()" disabled
+        class="btn-crimson-3d w-full py-3.5 px-4 rounded-2xl text-sm disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+        <i data-lucide="upload" class="w-4 h-4"></i>
+        <span>Process & Vectorize Document</span>
+      </button>
+
+      <!-- Active Knowledge Base Section -->
+      <div class="border-t border-white/10 pt-5 flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="p-1.5 rounded-lg bg-navy-800 text-white border border-white/10">
+              <i data-lucide="database" class="w-4 h-4"></i>
+            </div>
+            <h3 class="font-heading font-bold text-sm text-white">Active Knowledge Base</h3>
+          </div>
+
+          <button onclick="clearAllDocuments()" title="Clear all documents"
+            class="px-3 py-1 rounded-xl bg-crimson-800/80 hover:bg-crimson-700 text-white border border-crimson-600/40 text-xs font-semibold transition-colors flex items-center gap-1">
+            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            <span>Clear All</span>
+          </button>
+        </div>
+
+        <!-- Document List Container -->
+        <div id="doc-list" class="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1">
+          <div class="text-center py-5 text-slate-400 text-xs font-medium">
+            Loading knowledge base...
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ================================================================= -->
+  <!-- JAVASCRIPT APP LOGIC                                             -->
+  <!-- ================================================================= -->
+  <script>
+    // App State
+    let selectedFile = null;
+    const sessionId = 'session_' + Math.random().toString(36).substring(2, 9);
+
+    // Initialize Lucide Icons on Load
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      loadDocumentList();
+    });
+
+    // -----------------------------------------------------------------
+    // MODAL OPEN / CLOSE LOGIC
+    // -----------------------------------------------------------------
+    function openUploadModal() {
+      document.getElementById('upload-modal').classList.remove('hidden');
+      loadDocumentList();
+    }
+
+    function closeUploadModal() {
+      document.getElementById('upload-modal').classList.add('hidden');
+    }
+
+    // -----------------------------------------------------------------
+    // RAG PDF FILE UPLOAD & KNOWLEDGE BASE LOGIC
+    // -----------------------------------------------------------------
+    function handleFileSelect(e) {
+      if (e.target.files && e.target.files[0]) {
+        setSelectedFile(e.target.files[0]);
+      }
+    }
+
+    function handleDragOver(e) {
+      e.preventDefault();
+      document.getElementById('drop-zone').classList.add('border-crimson-600', 'bg-navy-950');
+    }
+
+    function handleDragLeave(e) {
+      e.preventDefault();
+      document.getElementById('drop-zone').classList.remove('border-crimson-600', 'bg-navy-950');
+    }
+
+    function handleDrop(e) {
+      e.preventDefault();
+      document.getElementById('drop-zone').classList.remove('border-crimson-600', 'bg-navy-950');
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        setSelectedFile(e.dataTransfer.files[0]);
+      }
+    }
+
+    function setSelectedFile(file) {
+      selectedFile = file;
+      document.getElementById('file-label').textContent = file.name + ` (${(file.size / 1024).toFixed(1)} KB)`;
+      document.getElementById('upload-btn').disabled = false;
+    }
+
+    async function uploadSelectedFile() {
+      if (!selectedFile) return;
+
+      const btn = document.getElementById('upload-btn');
+      const alertDiv = document.getElementById('upload-alert');
+
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Processing & Vectorizing...`;
+      lucide.createIcons();
+
+      alertDiv.className = 'hidden';
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      try {
+        const res = await fetch('/api/documents/upload', {
+          method: 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          alertDiv.className = 'text-xs p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/50 text-emerald-200 font-medium';
+          alertDiv.textContent = `Successfully processed '${data.document.filename}' (${data.document.chunk_count} chunks indexed).`;
+
+          selectedFile = null;
+          document.getElementById('file-input').value = '';
+          document.getElementById('file-label').textContent = 'Click or drag & drop PDF file here';
+          loadDocumentList();
+        } else {
+          alertDiv.className = 'text-xs p-3.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 font-medium';
+          alertDiv.textContent = data.error || data.detail || 'Upload failed.';
+        }
+      } catch (err) {
+        alertDiv.className = 'text-xs p-3.5 rounded-xl bg-red-950/80 border border-red-500/50 text-red-200 font-medium';
+        alertDiv.textContent = 'Could not connect to backend server.';
+      }
+
+      btn.disabled = !selectedFile;
+      btn.innerHTML = `<i data-lucide="upload" class="w-4 h-4"></i> <span>Process & Vectorize Document</span>`;
+      lucide.createIcons();
+    }
+
+    async function loadDocumentList() {
+      const container = document.getElementById('doc-list');
+      try {
+        const res = await fetch('/api/documents');
+        if (res.ok) {
+          const data = await res.json();
+          const docs = data.documents || [];
+
+          if (docs.length === 0) {
+            container.innerHTML = `
+              <div class="text-center py-5 text-slate-400 text-xs border border-dashed border-white/10 rounded-2xl bg-navy-950/50">
+                No documents uploaded yet. Upload a PDF above!
+              </div>
+            `;
+            return;
+          }
+
+          container.innerHTML = docs.map(d => `
+            <div class="p-3.5 rounded-2xl bg-navy-950/80 border border-white/10 flex items-center justify-between gap-3 hover:border-white/20 transition-all shadow-sm">
+              <div class="min-w-0 flex items-center gap-3">
+                <div class="p-2 rounded-xl bg-crimson-800/30 text-crimson-600 border border-crimson-600/20">
+                  <i data-lucide="file-text" class="w-4 h-4"></i>
+                </div>
+                <div class="min-w-0 flex flex-col">
+                  <span class="font-bold text-xs text-white truncate" title="${escapeHtml(d.filename)}">${escapeHtml(d.filename)}</span>
+                  <span class="text-[10px] text-slate-400 font-mono">${(d.size / 1024).toFixed(1)} KB • ${d.chunk_count} chunks</span>
+                </div>
+              </div>
+              <button onclick="deleteDocument('${d.id}')" title="Delete document" class="p-2 rounded-xl bg-crimson-800/20 hover:bg-crimson-700 text-slate-300 hover:text-white border border-crimson-600/30 transition-all shrink-0">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          `).join('');
+          lucide.createIcons();
+        }
+      } catch (err) {
+        container.innerHTML = `
+          <div class="text-center py-4 text-red-300 text-xs">
+            Failed to load knowledge base.
+          </div>
+        `;
+      }
+    }
+
+    async function deleteDocument(docId) {
+      if (!confirm('Are you sure you want to delete this document from the RAG knowledge base?')) return;
+      try {
+        const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadDocumentList();
+        }
+      } catch (err) {
+        alert('Failed to delete document.');
+      }
+    }
+
+    async function clearAllDocuments() {
+      if (!confirm('Are you sure you want to delete ALL uploaded documents and clear vector index?')) return;
+      try {
+        const res = await fetch('/api/documents', { method: 'DELETE' });
+        if (res.ok) {
+          loadDocumentList();
+        }
+      } catch (err) {
+        alert('Failed to clear documents.');
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // CHAT LOGIC (NO SOURCE FILES SHOWN AS REQUESTED)
+    // -----------------------------------------------------------------
+    function sendQuickPrompt(promptText) {
+      document.getElementById('chat-input').value = promptText;
+      handleChatSubmit(new Event('submit'));
+    }
+
+    async function handleChatSubmit(e) {
+      e.preventDefault();
+      const input = document.getElementById('chat-input');
+      const query = input.value.trim();
+      if (!query) return;
+
+      input.value = '';
+      appendUserMessage(query);
+
+      const loadingId = appendTypingIndicator();
+      const sendBtn = document.getElementById('send-btn');
+      sendBtn.disabled = true;
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: query, session_id: sessionId })
+        });
+
+        removeTypingIndicator(loadingId);
+
+        if (res.ok) {
+          const data = await res.json();
+          // Notice: Sources are intentionally NOT rendered as per user requirement
+          appendBotMessage(data.response);
+        } else {
+          appendBotMessage('Sorry, I encountered an error answering your request. Please try again.');
+        }
+      } catch (err) {
+        removeTypingIndicator(loadingId);
+        appendBotMessage('Network error: Could not reach the AI server.');
+      }
+
+      sendBtn.disabled = false;
+    }
+
+    function appendUserMessage(text) {
+      const container = document.getElementById('chat-messages');
+      const msgHtml = `
+        <div class="flex gap-3 justify-end animate-slide-up">
+          <div class="flex flex-col gap-1 items-end max-w-[85%]">
+            <span class="text-[11px] text-slate-300 font-semibold mr-1">You</span>
+            <div class="p-3.5 rounded-2xl rounded-tr-none bg-gradient-to-r from-crimson-600 to-rose-600 text-white font-medium text-sm leading-relaxed shadow-md">
+              ${escapeHtml(text)}
+            </div>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', msgHtml);
+      scrollToBottom();
+    }
+
+    function appendBotMessage(text) {
+      const container = document.getElementById('chat-messages');
+      const formattedText = formatMarkdown(text);
+      const msgHtml = `
+        <div class="flex gap-3 animate-slide-up">
+          <div class="w-9 h-9 rounded-2xl bg-navy-800 border border-white/15 flex items-center justify-center text-crimson-600 shrink-0 shadow-md">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div class="flex flex-col gap-1.5 max-w-[85%]">
+            <span class="text-[11px] text-slate-300 font-semibold ml-1">AI Assistant</span>
+            <div class="p-4 rounded-2xl rounded-tl-none bg-navy-850 border border-white/10 text-slate-100 text-sm leading-relaxed shadow-sm">
+              ${formattedText}
+            </div>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', msgHtml);
+      lucide.createIcons();
+      scrollToBottom();
+    }
+
+    function appendTypingIndicator() {
+      const container = document.getElementById('chat-messages');
+      const id = 'typing_' + Date.now();
+      const html = `
+        <div id="${id}" class="flex gap-3 animate-slide-up">
+          <div class="w-9 h-9 rounded-2xl bg-navy-800 border border-white/15 flex items-center justify-center text-crimson-600 shrink-0 shadow-md">
+            <i data-lucide="bot" class="w-5 h-5"></i>
+          </div>
+          <div class="p-4 rounded-2xl rounded-tl-none bg-navy-850 border border-white/10 flex items-center gap-2 text-crimson-600">
+            <span class="w-2.5 h-2.5 rounded-full bg-crimson-600 animate-bounce"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-crimson-600 animate-bounce [animation-delay:0.2s]"></span>
+            <span class="w-2.5 h-2.5 rounded-full bg-crimson-600 animate-bounce [animation-delay:0.4s]"></span>
+          </div>
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', html);
+      lucide.createIcons();
+      scrollToBottom();
+      return id;
+    }
+
+    function removeTypingIndicator(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+
+    function clearChatMessages() {
+      const container = document.getElementById('chat-messages');
+      container.innerHTML = `
+        <div class="flex gap-3 animate-slide-up">
+          <div class="w-9 h-9 rounded-2xl bg-navy-800 border border-white/15 flex items-center justify-center text-crimson-600 shrink-0 shadow-md">
+            <i data-lucide="sparkles" class="w-5 h-5"></i>
+          </div>
+          <div class="flex flex-col gap-1.5 max-w-[85%]">
+            <span class="text-[11px] text-slate-300 font-semibold ml-1">AI Assistant</span>
+            <div class="p-4 rounded-2xl rounded-tl-none bg-navy-850 border border-white/10 text-slate-100 text-sm leading-relaxed shadow-sm">
+              Chat history reset! Upload a PDF or ask any question.
+            </div>
+          </div>
+        </div>
+      `;
+      lucide.createIcons();
+    }
+
+    function scrollToBottom() {
+      const container = document.getElementById('chat-messages');
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function formatMarkdown(str) {
+      if (!str) return '';
+      let clean = str.replace(/\[Source:\s*[^\]]+\]/gi, '');
+      return clean
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/`([^`]+)`/g, '<code class="bg-navy-950 text-white px-2 py-0.5 rounded-lg border border-white/15 text-xs font-mono">$1</code>')
+        .replace(/\n/g, '<br>');
+    }
+  </script>
+</body>
+
+</html>
