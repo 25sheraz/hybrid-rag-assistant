@@ -16,8 +16,8 @@ class TestDocumentManagement(unittest.TestCase):
         cls.client = TestClient(app)
         cls.test_filename = "test_policy_doc.txt"
         cls.test_content = (
-            "DevelMo Document Management Security Policy.\n\n"
-            "1. Security Compliance: All documents ingested into DevelMo RAG must be encrypted.\n"
+            "KnowledgeRAG Document Management Security Policy.\n\n"
+            "1. Security Compliance: All documents ingested into KnowledgeRAG RAG must be encrypted.\n"
             "2. Vector Indexing: Dual-vector dense and sparse BM25 indexing is required for enterprise search.\n"
             "3. Access Control: Document payload tags document_id must match authorization level."
         )

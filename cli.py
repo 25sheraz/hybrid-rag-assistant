@@ -32,14 +32,14 @@ BANNER = r"""
 """
 
 def main():
-    parser = argparse.ArgumentParser(description="DevelMo RAG Interactive Assistant")
+    parser = argparse.ArgumentParser(description="Document RAG Interactive Assistant")
     parser.add_argument("--session", "-s", default="cli_user", help="Session ID for Redis conversation memory.")
     parser.add_argument("--sources", action="store_true", help="Always display retrieved context chunks.")
     args = parser.parse_args()
 
     print(BANNER)
     print("=" * 65)
-    print("⚡ INITIALIZING DEVELMO HYBRID RAG PIPELINE...")
+    print("⚡ INITIALIZING HYBRID RAG PIPELINE...")
     print("=" * 65)
 
     # Load Embedding Model
@@ -71,7 +71,7 @@ def main():
     show_sources = args.sources
 
     print("\n" + "=" * 65)
-    print("✅ DEVELMO RAG SYSTEM IS READY!")
+    print("✅ DOCUMENT RAG SYSTEM IS READY!")
     print("💡 Commands: 'exit' to quit | '/clear' to reset memory | '/sources' to toggle chunks")
     print("=" * 65 + "\n")
 
@@ -87,7 +87,7 @@ def main():
 
         # Handle Commands
         if user_input.lower() in ["exit", "quit", "q"]:
-            print("👋 Thank you for using DevelMo AI Assistant!")
+            print("👋 Thank you for using AI Knowledge Assistant!")
             break
         elif user_input.lower() == "/clear":
             memory.clear()
@@ -140,7 +140,7 @@ def main():
         payload = context_builder.build_prompt_payload(user_input, top_chunks, history)
 
         # 5. LLM Response Generation
-        print("🤖 DevelMo AI: ", end="", flush=True)
+        print("🤖 AI Assistant: ", end="", flush=True)
         response = llm.generate(payload)
         print(response + "\n")
 

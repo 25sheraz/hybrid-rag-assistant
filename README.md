@@ -23,7 +23,7 @@ Whether deployed as a FastAPI backend, embedded into web applications via the in
 - **🔄 Intelligent Query Rewriting**: Reformulates follow-up user queries (`QueryRewriter`) into standalone search statements using past turn context.
 - **🌐 FastAPI REST Server & Modular Architecture**: Clean, enterprise-grade project layout with modular routers (`routers/documents.py`), services (`services/document_service.py`), and Pydantic data schemas (`models/documents.py`).
 - **📁 Dynamic Document Management**: Real-time PDF upload, listing, document details, and deletion API (`POST /api/documents/upload`, `GET /api/documents`, `DELETE /api/documents/{document_id}`) with SHA-256 duplicate detection and automatic Qdrant vector point cleanup.
-- **⚛️ Interactive React UI Components**: Built-in React/TypeScript UI (`DocumentManager.tsx`, `DocumentUpload.tsx`, `DocumentList.tsx`) and floating chat widget (`DevelMoChatWidget.tsx`) with drag-and-drop file upload, document tab management, and real-time status indicators.
+- **⚛️ Interactive React UI Components**: Built-in React/TypeScript UI (`DocumentManager.tsx`, `DocumentUpload.tsx`, `DocumentList.tsx`) and floating chat widget (`KnowledgeRAGChatWidget.tsx`) with drag-and-drop file upload, document tab management, and real-time status indicators.
 - **📄 Shared Ingestion Pipeline**: Unified ingestion logic serving both live web API uploads and `ingest.py` batch CLI processing.
 
 ---
@@ -260,7 +260,7 @@ PDF-Uploader/
 ├── services/                  # Business logic services
 │   └── document_service.py    # Document management & vector cleanup operations
 │
-├── DevelMoChatWidget.tsx      # Embedded React UI Chat Widget component
+├── KnowledgeRAGChatWidget.tsx # Embedded React UI Chat Widget component
 ├── DocumentManager.tsx        # React Document Management interface
 ├── DocumentUpload.tsx         # Drag-and-drop document uploader component
 ├── DocumentList.tsx           # Document list view & delete modal component

@@ -54,16 +54,16 @@ def ingest_directory(dir_path: str, service: DocumentIngestionService):
     print(f"   Total Chunks    : {total_chunks}")
 
 def main():
-    parser = argparse.ArgumentParser(description="DevelMo RAG Document Ingestion Tool")
+    parser = argparse.ArgumentParser(description="Document RAG Ingestion Tool")
     parser.add_argument("--file", "-f", help="Path to a single PDF, Markdown, or Text file to ingest.")
     parser.add_argument("--dir", "-d", help="Path to a directory containing documents to ingest.")
     parser.add_argument("--recreate", action="store_true", help="Recreate Qdrant collection before ingesting.")
     
     args = parser.parse_args()
 
-    # Default to DevelMo_Knowledge_Base.md if no arguments supplied
+    # Default to KnowledgeRAG_Knowledge_Base.md if no arguments supplied
     if not args.file and not args.dir:
-        default_file = "DevelMo_Knowledge_Base.md"
+        default_file = "KnowledgeRAG_Knowledge_Base.md"
         if os.path.exists(default_file):
             print(f"ℹ️ No file/directory specified. Defaulting to '{default_file}'.")
             args.file = default_file

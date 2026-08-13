@@ -23,7 +23,7 @@ from qdrant_manager import QdrantManager
 from rag_pipeline import RedisMemoryManager, QueryRewriter, ContextBuilder, LLMGenerator
 from routers.documents import router as documents_router
 
-app = FastAPI(title="DevelMo RAG API Server")
+app = FastAPI(title="Document RAG API Server")
 
 app.add_middleware(
     CORSMiddleware,
@@ -39,7 +39,7 @@ app.include_router(documents_router)
 # ---------------------------------------------------------
 # INITIALIZE RAG PIPELINE
 # ---------------------------------------------------------
-print("⚡ Initializing DevelMo RAG Pipeline Models...")
+print("⚡ Initializing Document RAG Pipeline Models...")
 embed_name = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 embed_model = SentenceTransformer(embed_name, local_files_only=True)
 
@@ -68,7 +68,7 @@ class ChatResponse(BaseModel):
 def read_root():
     if os.path.exists("index.html"):
         return FileResponse("index.html")
-    return {"status": "DevelMo RAG Server Online", "docs": "/docs"}
+    return {"status": "Document RAG Server Online", "docs": "/docs"}
 
 @app.post("/api/chat", response_model=ChatResponse)
 def chat_endpoint(req: ChatRequest):

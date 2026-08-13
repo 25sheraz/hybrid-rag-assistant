@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, MessageSquare, X, Send, RotateCcw, Sparkles, Eye, Car, ChevronDown, FolderKanban } from 'lucide-react';
+import { Bot, MessageSquare, X, Send, RotateCcw, Sparkles, Eye, ChevronDown, FolderKanban } from 'lucide-react';
 import { DocumentManager } from './DocumentManager';
 
 export interface Message {
@@ -10,17 +10,17 @@ export interface Message {
   sources?: Array<{ source: string; page: number }>;
 }
 
-export interface DevelMoChatWidgetProps {
+export interface KnowledgeRAGChatWidgetProps {
   apiEndpoint?: string;
   sessionId?: string;
   initialMessage?: string;
   primaryColor?: string;
 }
 
-export const DevelMoChatWidget: React.FC<DevelMoChatWidgetProps> = ({
+export const KnowledgeRAGChatWidget: React.FC<KnowledgeRAGChatWidgetProps> = ({
   apiEndpoint = 'http://localhost:8000/api/chat',
   sessionId = 'react_user_session',
-  initialMessage = 'Hello! 👋 Welcome to **DevelMo**. How can I help you scale your business with custom AI, computer vision, or software today?',
+  initialMessage = 'Hello! 👋 Welcome to **AI Knowledge Assistant**. How can I help you query your documents today?',
 }) => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'documents'>('chat');
@@ -48,9 +48,11 @@ export const DevelMoChatWidget: React.FC<DevelMoChatWidgetProps> = ({
     }
   }, [messages, isTyping, activeTab]);
 
-  const handleSend = async (queryText?: string) => {
-    const text = queryText || inputQuery;
+  const handleSend = async (queryToSend?: string) => {
+    const text = queryToSend || inputQuery;
     if (!text.trim()) return;
+
+    setShowQuickReplies(false);
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -60,55 +62,44 @@ export const DevelMoChatWidget: React.FC<DevelMoChatWidgetProps> = ({
     };
 
     setMessages((prev: Message[]) => [...prev, userMsg]);
-    setInputQuery('');
-    setShowQuickReplies(false);
+    if (!queryToSend) setInputQuery('');
     setIsTyping(true);
 
-    const apiBase = apiEndpoint.replace(/\/api\/chat\/?$/, '');
-    const endpoints = Array.from(
-      new Set([apiEndpoint, `${apiBase}/api/chat`, 'http://localhost:8000/api/chat', '/api/chat'])
-    );
+    try {
+      const res = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: text, session_id: sessionId }),
+      });
 
-    for (const ep of endpoints) {
-      try {
-        const response = await fetch(ep, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: text, session_id: sessionId }),
-        });
+      if (!res.ok) throw new Error(`HTTP Error ${res.status}`);
 
-        if (response.ok) {
-          const data = await response.json();
-          setIsTyping(false);
-          setMessages((prev: Message[]) => [
-            ...prev,
-            {
-              id: (Date.now() + 1).toString(),
-              role: 'assistant',
-              content: data.response || 'No response returned.',
-              sources: data.sources,
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            },
-          ]);
-          return;
-        }
-      } catch (err) {
-        // Try next endpoint
-      }
-    }
+      const data = await res.json();
 
-    setIsTyping(false);
-    setMessages((prev: Message[]) => [
-      ...prev,
-      {
+      const assistantMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: '⚠️ Could not connect to DevelMo RAG server. Please ensure FastAPI backend is running on http://localhost:8000',
+        content: data.response || 'No response generated.',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      },
-    ]);
-  };
+        sources: data.sources || [],
+      };
 
+      setMessages((prev: Message[]) => [...prev, assistantMsg]);
+    } catch (err) {
+      console.error('Chat Request Failed:', err);
+      setMessages((prev: Message[]) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          role: 'assistant',
+          content: '⚠️ Could not connect to RAG server. Please ensure FastAPI backend is running on http://localhost:8000',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        },
+      ]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
 
   const handleClearMemory = () => {
     setMessages([
@@ -128,7 +119,7 @@ export const DevelMoChatWidget: React.FC<DevelMoChatWidgetProps> = ({
       {/* Floating Action Button (FAB) */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        aria-label="Toggle DevelMo AI Chatbot"
+        aria-label="Toggle AI Chatbot"
         className="fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#00E5FF] hover:bg-[#00B8CC] text-[#070A11] flex items-center justify-center shadow-[0_0_25px_-5px_rgba(0,229,255,0.5)] transition-all transform hover:scale-105 active:scale-95 group"
       >
         <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 border-2 border-[#070A11] animate-pulse" />
@@ -158,7 +149,7 @@ export const DevelMoChatWidget: React.FC<DevelMoChatWidgetProps> = ({
             </div>
             <div>
               <h3 className="font-sans font-bold text-white text-base leading-tight flex items-center gap-1.5">
-                DevelMo AI
+                AI Assistant
                 <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-cyan-950 text-[#00E5FF] border border-cyan-500/30">
                   RAG 2.0
                 </span>
@@ -236,7 +227,7 @@ export const DevelMoChatWidget: React.FC<DevelMoChatWidgetProps> = ({
 
                     <div className={`flex flex-col gap-1 max-w-[82%] ${isUser ? 'items-end' : ''}`}>
                       <span className="text-[11px] text-slate-400 font-medium px-1">
-                        {isUser ? 'You' : 'DevelMo AI'} • {msg.timestamp}
+                        {isUser ? 'You' : 'AI Assistant'} • {msg.timestamp}
                       </span>
                       <div
                         className={`p-3.5 rounded-2xl text-sm leading-relaxed shadow-sm ${
@@ -263,27 +254,20 @@ export const DevelMoChatWidget: React.FC<DevelMoChatWidgetProps> = ({
                 );
               })}
 
-
               {/* Quick Reply Chips */}
               {showQuickReplies && (
                 <div className="pt-1 flex flex-wrap gap-2">
                   <button
-                    onClick={() => handleSend('What flagship products does DevelMo build?')}
+                    onClick={() => handleSend('What documents are currently ingested?')}
                     className="px-3 py-1.5 rounded-full bg-[#0F1623] hover:bg-slate-800 border border-[#00E5FF]/30 text-[#00E5FF] text-xs font-medium transition-all hover:scale-105 flex items-center gap-1.5"
                   >
-                    <Sparkles className="w-3 h-3" /> Flagship Products
+                    <Sparkles className="w-3 h-3" /> Check Documents
                   </button>
                   <button
-                    onClick={() => handleSend('Tell me about CrowdIQ camera analytics')}
+                    onClick={() => handleSend('Can you summarize the main contents of the uploaded files?')}
                     className="px-3 py-1.5 rounded-full bg-[#0F1623] hover:bg-slate-800 border border-[#00E5FF]/30 text-[#00E5FF] text-xs font-medium transition-all hover:scale-105 flex items-center gap-1.5"
                   >
-                    <Eye className="w-3 h-3" /> CrowdIQ Vision
-                  </button>
-                  <button
-                    onClick={() => handleSend('What are DevelMo global office contact details?')}
-                    className="px-3 py-1.5 rounded-full bg-[#0F1623] hover:bg-slate-800 border border-[#00E5FF]/30 text-[#00E5FF] text-xs font-medium transition-all hover:scale-105 flex items-center gap-1.5"
-                  >
-                    <Car className="w-3 h-3" /> Global Offices
+                    <Eye className="w-3 h-3" /> Summarize Documents
                   </button>
                 </div>
               )}
@@ -333,4 +317,4 @@ export const DevelMoChatWidget: React.FC<DevelMoChatWidgetProps> = ({
   );
 };
 
-export default DevelMoChatWidget;
+export default KnowledgeRAGChatWidget;

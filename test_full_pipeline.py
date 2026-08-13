@@ -80,7 +80,7 @@ def run_test_scenario(scenario_name: str, conversation_turns: list, memory: Redi
 
 def main():
     print("=" * 70)
-    print(" 🚀 DEVELMO END-TO-END HYBRID RAG RELEVANCY BENCHMARK")
+    print(" 🚀 KNOWLEDGERAG END-TO-END HYBRID RAG RELEVANCY BENCHMARK")
     print("=" * 70)
 
     embedding_model_name = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
@@ -127,7 +127,7 @@ def main():
     run_test_scenario(
         scenario_name="Global Presence & Contact Info",
         conversation_turns=[
-            "Where are DevelMo's global offices located?",
+            "Where are KnowledgeRAG's global offices located?",
             "What is the contact phone number for Saudi Arabia and Australia?"
         ],
         memory=memory, rewriter=rewriter, embed_model=embed_model,

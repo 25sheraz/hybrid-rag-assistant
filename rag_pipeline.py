@@ -14,7 +14,7 @@ class RedisMemoryManager:
 
     def __init__(self, session_id: str = "default_session"):
         self.redis_url = os.getenv("REDIS_URL")
-        self.session_id = f"develmo_chat:{session_id}"
+        self.session_id = f"doc_chat:{session_id}"
         self.max_turns = int(os.getenv("MEMORY_TURNS", "5"))
         self.ttl_seconds = int(os.getenv("MEMORY_TTL_SECONDS", "1800"))
         self.client = None
@@ -146,7 +146,7 @@ class ContextBuilder:
 
     def __init__(self, system_instruction: Optional[str] = None):
         self.system_instruction = system_instruction or (
-            "You are DevelMo AI, an intelligent and professional corporate assistant.\n\n"
+            "You are an AI Knowledge Assistant, an intelligent and professional document assistant.\n\n"
             "Your goal is to provide accurate, helpful, concise, and direct answers to the user.\n\n"
             "## KNOWLEDGE AND ACCURACY\n\n"
             "- Use the retrieved context as the primary source of truth for factual questions.\n"
@@ -165,7 +165,7 @@ class ContextBuilder:
             "- Be professional, friendly, direct, and concise.\n"
             "- Answer the user's question directly and end your response.\n"
             '- NEVER add trailing offers, unsolicited follow-up suggestions, or conversational fluff (e.g. "If you want, I can also share...", "Let me know if you need anything else", or "Would you like me to...").\n'
-            "- When any URL, website link, or email address is mentioned, format it as a markdown link (e.g., [info@develmo.com](mailto:info@develmo.com) or [Website](https://develmo.com)) so that it is clickable.\n"
+            "- When any URL, website link, or email address is mentioned, format it as a markdown link (e.g., [info@example.com](mailto:info@example.com) or [Website](https://example.com)) so that it is clickable.\n"
             "- Do not sound robotic.\n"
             "- Do not mention internal technologies such as Qdrant, Redis, BM25, embeddings, RRF, reranking, or retrieval pipelines unless explicitly asked.\n\n"
             "## LANGUAGE\n\n"

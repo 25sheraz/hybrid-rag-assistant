@@ -18,7 +18,7 @@ from qdrant_manager import QdrantManager
 from sentence_transformers import SentenceTransformer, CrossEncoder
 
 def main():
-    query = "What flagship products does DevelMo build and what is CrowdIQ?"
+    query = "What flagship products does KnowledgeRAG build and what is CrowdIQ?"
     print(f"🔍 QUERY: '{query}'\n")
 
     embedding_model_name = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
