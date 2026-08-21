@@ -50,7 +50,7 @@ class DocumentMetadataStore:
 
     def get_by_id(self, doc_id: str) -> Optional[DocumentInfo]:
         for item in self._read_data():
-            if item.get("id") == doc_id:
+            if item.get("id") == doc_id or item.get("filename") == doc_id:
                 return DocumentInfo(**item)
         return None
 
@@ -62,15 +62,15 @@ class DocumentMetadataStore:
 
     def add(self, doc: DocumentInfo):
         data = self._read_data()
-        # Remove any existing record with same ID if replacing
-        data = [item for item in data if item.get("id") != doc.id]
+        # Remove any existing record with same ID or filename if replacing
+        data = [item for item in data if item.get("id") != doc.id and item.get("filename") != doc.filename]
         data.append(doc.dict())
         self._write_data(data)
 
     def delete(self, doc_id: str) -> bool:
         data = self._read_data()
         initial_len = len(data)
-        new_data = [item for item in data if item.get("id") != doc_id]
+        new_data = [item for item in data if item.get("id") != doc_id and item.get("filename") != doc_id]
         if len(new_data) < initial_len:
             self._write_data(new_data)
             return True
@@ -219,11 +219,20 @@ class DocumentIngestionService:
         
         # 1. Delete Qdrant points matching document_id, doc_id, or source filename
         self.qdrant.delete_document_points(document_id)
-
         if doc_info:
-            # 2. Delete local stored file
+            if doc_info.id and doc_info.id != document_id:
+                self.qdrant.delete_document_points(doc_info.id)
+            if doc_info.filename and doc_info.filename != document_id:
+                self.qdrant.delete_document_points(doc_info.filename)
+
+        target_ids = {document_id}
+        if doc_info:
+            target_ids.add(doc_info.id)
+
+        # 2. Delete local stored files matching target ID or filename
+        if doc_info:
             filename = doc_info.filename
-            saved_filename = f"{document_id}_{filename}"
+            saved_filename = f"{doc_info.id}_{filename}"
             saved_path = os.path.join(self.upload_dir, saved_filename)
             if os.path.exists(saved_path):
                 try:
@@ -231,23 +240,24 @@ class DocumentIngestionService:
                 except Exception as e:
                     print(f"⚠️ Could not delete local file '{saved_path}': {e}")
 
-            # Also search upload_dir for any file starting with document_id
-            try:
+        try:
+            if os.path.exists(self.upload_dir):
                 for f in os.listdir(self.upload_dir):
-                    if f.startswith(document_id):
+                    if any(f.startswith(tid) for tid in target_ids) or (doc_info and f.endswith(doc_info.filename)):
                         p = os.path.join(self.upload_dir, f)
                         if os.path.exists(p):
-                            os.remove(p)
-            except Exception:
-                pass
+                            try:
+                                os.remove(p)
+                            except Exception:
+                                pass
+        except Exception:
+            pass
 
-            # 3. Remove metadata record
-            self.meta_store.delete(document_id)
-            return True
-        else:
-            # If doc_info wasn't in metadata JSON, check if metadata deletion deleted anything by ID
-            deleted_meta = self.meta_store.delete(document_id)
-            return True
+        # 3. Remove metadata record
+        deleted = self.meta_store.delete(document_id)
+        if doc_info and doc_info.id != document_id:
+            self.meta_store.delete(doc_info.id)
+        return True
 
     def clear_all_documents(self) -> bool:
         """Wipes all Qdrant vector points, deletes local upload files, and resets metadata store."""

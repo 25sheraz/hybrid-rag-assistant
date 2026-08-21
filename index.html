@@ -493,6 +493,11 @@
           const docs = data.documents || [];
 
           if (docs.length === 0) {
+            const alertDiv = document.getElementById('upload-alert');
+            if (alertDiv) {
+              alertDiv.className = 'hidden';
+              alertDiv.textContent = '';
+            }
             container.innerHTML = `
               <div class="text-center py-5 text-slate-400 text-xs border border-dashed border-white/10 rounded-2xl bg-navy-950/50">
                 No documents uploaded yet. Upload a PDF above!
@@ -533,6 +538,11 @@
       try {
         const res = await fetch(`/api/documents/${docId}`, { method: 'DELETE' });
         if (res.ok) {
+          const alertDiv = document.getElementById('upload-alert');
+          if (alertDiv) {
+            alertDiv.className = 'hidden';
+            alertDiv.textContent = '';
+          }
           loadDocumentList();
         }
       } catch (err) {
@@ -545,6 +555,18 @@
       try {
         const res = await fetch('/api/documents', { method: 'DELETE' });
         if (res.ok) {
+          const alertDiv = document.getElementById('upload-alert');
+          if (alertDiv) {
+            alertDiv.className = 'hidden';
+            alertDiv.textContent = '';
+          }
+          selectedFile = null;
+          const fileInput = document.getElementById('file-input');
+          if (fileInput) fileInput.value = '';
+          const fileLabel = document.getElementById('file-label');
+          if (fileLabel) fileLabel.textContent = 'Click or drag & drop PDF file here';
+          const uploadBtn = document.getElementById('upload-btn');
+          if (uploadBtn) uploadBtn.disabled = true;
           loadDocumentList();
         }
       } catch (err) {
