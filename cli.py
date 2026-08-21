@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
 # Suppress noisy HF warnings
-os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -22,12 +21,12 @@ from qdrant_manager import QdrantManager
 from rag_pipeline import RedisMemoryManager, QueryRewriter, ContextBuilder, LLMGenerator
 
 BANNER = r"""
-  ██████╗  ███████╗██╗   ██╗███████╗██╗     ███╗   ███╗██████╗ 
-  ██╔══██╗ ██╔════╝██║   ██║██╔════╝██║     ████╗ ████║██╔══██╗
-  ██║  ██║ █████╗  ██║   ██║█████╗  ██║     ██╔████╔██║██║  ██║
-  ██║  ██║ ██╔══╝  ╚██╗ ██╔╝██╔══╝  ██║     ██║╚██╔╝██║██║  ██║
-  ██████╔╝ ███████╗ ╚████╔╝ ███████╗███████╗██║ ╚═╝ ██║██████╔╝
-  ╚═════╝  ╚══════╝  ╚═══╝  ╚══════╝╚══════╝╚═╝     ╚═╝╚═════╝ 
+  ██████╗ ██████╗ ███████╗    ██████╗  █████╗  ██████╗ 
+  ██╔══██╗██╔══██╗██╔════╝    ██╔══██╗██╔══██╗██╔════╝ 
+  ██████╔╝██║  ██║█████╗      ██████╔╝███████║██║  ███╗
+  ██╔═══╝ ██║  ██║██╔══╝      ██╔══██╗██╔══██║██║   ██║
+  ██║     ██████╔╝██║         ██║  ██║██║  ██║╚██████╔╝
+  ╚═╝     ╚═════╝ ╚═╝         ╚═╝  ╚═╝╚═╝  ╚═╝ ╚═════╝ 
         🤖 Production Dual-Vector Hybrid RAG Assistant
 """
 
@@ -45,7 +44,7 @@ def main():
     # Load Embedding Model
     embed_name = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
     print(f"🤖 [1/5] Loading Embedding Model: '{embed_name}'...")
-    embed_model = SentenceTransformer(embed_name, local_files_only=True)
+    embed_model = SentenceTransformer(embed_name)
 
     # Load Reranker Model
     reranker_name = os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")

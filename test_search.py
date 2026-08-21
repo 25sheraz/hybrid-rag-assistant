@@ -4,8 +4,6 @@ import sys
 # Ensure stdout handles unicode encoding safely on Windows CP1252 consoles
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-# Suppress Hugging Face online checks, warnings, and progress bars
-os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 

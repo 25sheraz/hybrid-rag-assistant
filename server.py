@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 # Ensure UTF-8 output
 sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 
-os.environ["HF_HUB_OFFLINE"] = "1"
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = "1"
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
@@ -41,7 +40,7 @@ app.include_router(documents_router)
 # ---------------------------------------------------------
 print("⚡ Initializing Document RAG Pipeline Models...")
 embed_name = os.getenv("EMBEDDING_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-embed_model = SentenceTransformer(embed_name, local_files_only=True)
+embed_model = SentenceTransformer(embed_name)
 
 reranker_name = os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
 try:
