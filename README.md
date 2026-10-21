@@ -1,5 +1,7 @@
 # Dual-Vector Hybrid RAG & Dynamic Document Management
 
+![Knowledge RAG and Document Manager: upload PDFs, ask questions and get source-backed answers](docs/cover.jpg)
+
 <p align="center">
   <strong>Production-grade Enterprise Retrieval-Augmented Generation (RAG) System with Dual-Vector Search, Cross-Encoder Reranking, Dynamic Document Management, Redis Session Memory, and Embedded React UI.</strong>
 </p>
